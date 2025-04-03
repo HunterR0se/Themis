@@ -68,8 +68,17 @@ def extract_text_from_pdf(pdf_path):
             reader = PyPDF2.PdfReader(file)
             text = ""
             pages = len(reader.pages)
+            
+            # Try normal text extraction first
             for i, page in enumerate(tqdm(reader.pages, desc="Extracting Pages", unit="page")):
-                text += page.extract_text() + "\n"
+                page_text = page.extract_text()
+                text += page_text + "\n"
+            
+            # Check if we got meaningful text (more than 100 characters)
+            if len(text.strip()) < 100:
+                print_status(f"Minimal text found in {pdf_path.name}, PDF may be scanned. Consider using OCR tools.", Fore.YELLOW)
+                print_status(f"For OCR processing, install tesseract-ocr and add OCR functionality to Themis.", Fore.YELLOW)
+                
             print_status(f"Extracted {pages} pages ({len(text)} characters) from {pdf_path.name}", Fore.GREEN)
             return text
     except Exception as e:

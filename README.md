@@ -24,6 +24,16 @@ This system processes legal documents in a two-step workflow:
 - colorama (for colored output)
 - An Ollama server running with LLMs
 
+### Optional Requirements
+
+- tesseract-ocr and pytesseract (for OCR support with scanned PDFs)
+- pdf2image (for converting PDFs to images for OCR)
+
+## Limitations
+
+- The current version extracts text directly from PDFs using PyPDF2, which works well for text-based PDFs but cannot extract text from scanned documents
+- If you need to analyze scanned PDF documents, consider adding OCR functionality (see below)
+
 ## Setup
 
 ### Virtual Environment
@@ -257,6 +267,52 @@ You can analyze the same documents with different LLMs:
 - Each model's results are stored separately
 - Allows comparing analysis across different models
 - Can generate defense materials using your preferred model
+
+## Adding OCR Support
+
+The current version of Themis cannot process scanned PDFs that don't contain extractable text. To add OCR support:
+
+1. Install the required packages:
+   ```bash
+   sudo apt-get install tesseract-ocr poppler-utils
+   pip install pytesseract pdf2image pillow
+   ```
+
+2. Extend the `extract_text_from_pdf` function in `themis_lib/utils.py` to use OCR when needed:
+   ```python
+   def extract_text_from_pdf(pdf_path, use_ocr=False):
+       # Existing code...
+       
+       # If no text found or OCR explicitly requested
+       if use_ocr or len(text.strip()) < 100:
+           try:
+               from pdf2image import convert_from_path
+               import pytesseract
+               
+               print_status(f"Using OCR to extract text from {pdf_path.name}", Fore.YELLOW)
+               images = convert_from_path(pdf_path, dpi=300)
+               ocr_text = ""
+               
+               for i, image in enumerate(tqdm(images, desc="OCR Processing", unit="page")):
+                   page_text = pytesseract.image_to_string(image)
+                   ocr_text += page_text + "\n"
+                   
+               print_status(f"OCR extracted {len(ocr_text)} characters from {pdf_path.name}", Fore.GREEN)
+               return ocr_text
+           except ImportError:
+               print_status("OCR libraries not found. Install with: pip install pytesseract pdf2image", Fore.RED)
+               return text
+           except Exception as e:
+               print_status(f"OCR error: {str(e)}", Fore.RED)
+               return text
+       
+       return text
+   ```
+
+3. Add an `--ocr` command-line option to the analyze command:
+   ```python
+   analyze_parser.add_argument('--ocr', action='store_true', help='Use OCR for text extraction from PDFs')
+   ```
 
 ## Notes
 
