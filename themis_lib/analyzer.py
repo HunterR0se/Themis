@@ -25,9 +25,8 @@ class CaseAnalyzer:
         self.model = model
         self.api_url = api_url
         
-        # Create a model-specific directory for cache and logs in the case directory
-        logs_dir = self.case_dir / "logs"
-        self.output_dir = logs_dir / f"{datetime.now().strftime('%Y%m%d')}_{self.model}"
+        # Create a model-specific directory in the case directory
+        self.output_dir = self.case_dir / f"{datetime.now().strftime('%Y%m%d')}_{self.model}"
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
         # Cache files are stored in the output directory

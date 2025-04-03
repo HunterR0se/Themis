@@ -19,9 +19,8 @@ class DefenseGenerator:
         self.model = model
         self.api_url = api_url
 
-        # Create logs directory with date and model in the case directory
-        logs_dir = self.case_dir / "logs"
-        self.output_dir = logs_dir / f"{datetime.now().strftime('%Y%m%d')}_{self.model}"
+        # Create a date and model-specific directory in the case directory
+        self.output_dir = self.case_dir / f"{datetime.now().strftime('%Y%m%d')}_{self.model}"
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         print_status(f"Initializing defense generator with model: {Fore.CYAN}{model}{Fore.GREEN}", Fore.GREEN)

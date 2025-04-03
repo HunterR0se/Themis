@@ -27,12 +27,21 @@ This system processes legal documents in a two-step workflow:
 ### Optional Requirements
 
 - tesseract-ocr and pytesseract (for OCR support with scanned PDFs)
-- pdf2image (for converting PDFs to images for OCR)
+- pdf2image and poppler-utils (for converting PDFs to images for OCR)
 
-## Limitations
+Themis will automatically attempt to use OCR when it detects minimal text in a PDF, but you need to install the OCR dependencies:
 
-- The current version extracts text directly from PDFs using PyPDF2, which works well for text-based PDFs but cannot extract text from scanned documents
-- If you need to analyze scanned PDF documents, consider adding OCR functionality (see below)
+```bash
+# Install Python packages
+pip install themis[ocr]  # When installing from pip
+# or
+pip install pytesseract pdf2image pillow  # For manual installation
+
+# Install system packages
+sudo apt-get install tesseract-ocr poppler-utils  # For Debian/Ubuntu
+# or
+brew install tesseract poppler  # For macOS with Homebrew
+```
 
 ## Setup
 
@@ -55,14 +64,16 @@ pip install PyPDF2 requests tqdm colorama
 By default, Themis is configured to connect to an Ollama server running on localhost (http://localhost:11434). You can connect to a remote Ollama server in two ways:
 
 1. Command-line options:
-   ```bash
-   python themis.py --ollama-host 192.168.1.100 --ollama-port 11434 analyze --dir ~/Legal/MyCase/
-   ```
+
+    ```bash
+    python themis.py --ollama-host 192.168.1.100 --ollama-port 11434 analyze --dir ~/Legal/MyCase/
+    ```
 
 2. Configuration file:
    The first time you run Themis with specific options, a configuration file is automatically created at `~/.themis/themis.cfg`. This saves your settings including model preferences and Ollama server details, allowing you to run subsequent commands without repeating these options.
 
 You can view or reset your configuration with:
+
 ```bash
 python themis.py config --show   # Show current configuration
 python themis.py config --reset  # Reset to defaults
@@ -93,15 +104,15 @@ The system organizes files within your specified case directory:
 YOUR_CASE_DIR/                           # Your specified case directory
   ├── *.pdf                              # Source PDF documents
   ├── document_analysis_modelname.json   # Analysis results (root level copy)
-  ├── logs/                              # Log directory within case directory
-  │   └── YYYYMMDD_modelname/            # Date and model-specific logs
-  │       ├── case_analysis.log          # Analysis log file
-  │       ├── analysis_cache.json        # Cache to speed up repeat runs
-  │       ├── document_analysis_modelname.json  # Analysis results
-  │       └── defense_materials/         # Generated defense materials
-  │           ├── defense_strategy.md
-  │           ├── action_items.md
-  │           └── case_timeline.md
+  ├── document_analysis_modelname.md     # Human-readable analysis (root level)
+  ├── YYYYMMDD_modelname/                # Date and model-specific directory
+  │   ├── case_analysis.log              # Analysis log file
+  │   ├── analysis_cache.json            # Cache to speed up repeat runs
+  │   ├── document_analysis_modelname.json  # Analysis results
+  │   └── defense_materials/             # Generated defense materials
+  │       ├── defense_strategy.md
+  │       ├── action_items.md
+  │       └── case_timeline.md
   └── Defense-YYYYMMDD-modelname/        # Copy of defense materials for easy access
       ├── defense_strategy.md
       ├── action_items.md
@@ -248,7 +259,7 @@ The analysis results are structured as a JSON file containing:
 
 The analyzer maintains a cache of analysis results to avoid redundant processing:
 
-- Cache is stored in `logs/YYYYMMDD_modelname/analysis_cache.json`
+- Cache is stored in `YYYYMMDD_modelname/analysis_cache.json`
 - Documents that have already been analyzed with the same questions will use cached results
 - You can delete this file to force reanalysis of all documents
 
@@ -268,51 +279,27 @@ You can analyze the same documents with different LLMs:
 - Allows comparing analysis across different models
 - Can generate defense materials using your preferred model
 
-## Adding OCR Support
+## OCR Support
 
-The current version of Themis cannot process scanned PDFs that don't contain extractable text. To add OCR support:
+Themis includes automatic OCR (Optical Character Recognition) support for scanned PDFs:
 
-1. Install the required packages:
-   ```bash
-   sudo apt-get install tesseract-ocr poppler-utils
-   pip install pytesseract pdf2image pillow
-   ```
+- When minimal text is detected in a PDF (less than 100 characters), OCR is automatically attempted
+- If the OCR libraries are not installed, appropriate warning messages are shown
+- OCR results are only used if they provide more text than the standard extraction method
 
-2. Extend the `extract_text_from_pdf` function in `themis_lib/utils.py` to use OCR when needed:
-   ```python
-   def extract_text_from_pdf(pdf_path, use_ocr=False):
-       # Existing code...
-       
-       # If no text found or OCR explicitly requested
-       if use_ocr or len(text.strip()) < 100:
-           try:
-               from pdf2image import convert_from_path
-               import pytesseract
-               
-               print_status(f"Using OCR to extract text from {pdf_path.name}", Fore.YELLOW)
-               images = convert_from_path(pdf_path, dpi=300)
-               ocr_text = ""
-               
-               for i, image in enumerate(tqdm(images, desc="OCR Processing", unit="page")):
-                   page_text = pytesseract.image_to_string(image)
-                   ocr_text += page_text + "\n"
-                   
-               print_status(f"OCR extracted {len(ocr_text)} characters from {pdf_path.name}", Fore.GREEN)
-               return ocr_text
-           except ImportError:
-               print_status("OCR libraries not found. Install with: pip install pytesseract pdf2image", Fore.RED)
-               return text
-           except Exception as e:
-               print_status(f"OCR error: {str(e)}", Fore.RED)
-               return text
-       
-       return text
-   ```
+### How OCR Works in Themis
 
-3. Add an `--ocr` command-line option to the analyze command:
-   ```python
-   analyze_parser.add_argument('--ocr', action='store_true', help='Use OCR for text extraction from PDFs')
-   ```
+1. The PDF is first processed using the standard PyPDF2 extraction
+2. If minimal text is found, OCR is automatically attempted:
+   - The PDF is converted to images using pdf2image
+   - Each image is processed with pytesseract for text recognition
+   - If OCR produces better results, the OCR text is used
+
+### OCR Performance Considerations
+
+- OCR processing is significantly slower than standard text extraction
+- For large documents with many pages, OCR can take several minutes
+- Processing quality depends on the scanned document quality and resolution
 
 ## Notes
 

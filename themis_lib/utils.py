@@ -60,8 +60,17 @@ def load_questions_from_file(file_path):
         print_status(f"Error loading questions: {str(e)}", Fore.RED)
         return None
 
-def extract_text_from_pdf(pdf_path):
-    """Extract text from a PDF file"""
+def extract_text_from_pdf(pdf_path, force_ocr=False):
+    """
+    Extract text from a PDF file, using OCR if needed
+    
+    Args:
+        pdf_path: Path to the PDF file
+        force_ocr: Force OCR even if text is extractable
+        
+    Returns:
+        Extracted text as a string
+    """
     try:
         print_status(f"Extracting text from {Fore.CYAN}{pdf_path.name}{Fore.YELLOW}...", Fore.YELLOW)
         with open(pdf_path, 'rb') as file:
@@ -75,11 +84,43 @@ def extract_text_from_pdf(pdf_path):
                 text += page_text + "\n"
             
             # Check if we got meaningful text (more than 100 characters)
-            if len(text.strip()) < 100:
-                print_status(f"Minimal text found in {pdf_path.name}, PDF may be scanned. Consider using OCR tools.", Fore.YELLOW)
-                print_status(f"For OCR processing, install tesseract-ocr and add OCR functionality to Themis.", Fore.YELLOW)
+            if force_ocr or len(text.strip()) < 100:
+                print_status(f"Minimal text found in {pdf_path.name}, attempting OCR...", Fore.YELLOW)
                 
-            print_status(f"Extracted {pages} pages ({len(text)} characters) from {pdf_path.name}", Fore.GREEN)
+                # Try to import OCR libraries
+                try:
+                    from pdf2image import convert_from_path
+                    import pytesseract
+                    
+                    # Convert PDF to images
+                    print_status(f"Converting PDF to images for OCR...", Fore.YELLOW)
+                    images = convert_from_path(pdf_path, dpi=300)
+                    ocr_text = ""
+                    
+                    # Process each page with OCR
+                    for i, image in enumerate(tqdm(images, desc="OCR Processing", unit="page")):
+                        page_text = pytesseract.image_to_string(image)
+                        ocr_text += page_text + "\n"
+                    
+                    # If OCR found more text, use that instead
+                    if len(ocr_text.strip()) > len(text.strip()):
+                        print_status(f"OCR extracted {len(ocr_text)} characters, using OCR results", Fore.GREEN)
+                        return ocr_text
+                    else:
+                        print_status(f"OCR didn't improve results, using original extraction", Fore.YELLOW)
+                        
+                except ImportError as e:
+                    print_status("OCR libraries not available. Install with: pip install pytesseract pdf2image", Fore.RED)
+                    print_status("And system packages: sudo apt-get install tesseract-ocr poppler-utils", Fore.RED)
+                except Exception as e:
+                    print_status(f"OCR failed: {str(e)}", Fore.RED)
+            
+            character_count = len(text)
+            if character_count < 100:
+                print_status(f"Warning: Very little text extracted ({character_count} chars)", Fore.RED)
+            else:
+                print_status(f"Extracted {pages} pages ({character_count} characters)", Fore.GREEN)
+            
             return text
     except Exception as e:
         print_status(f"Error extracting text from {pdf_path.name}: {str(e)}", Fore.RED)

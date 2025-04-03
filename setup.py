@@ -6,11 +6,18 @@ setup(
     packages=find_packages(),
     scripts=["themis.py"],
     install_requires=[
-        "PyPDF2",
-        "requests",
-        "tqdm",
-        "colorama",
+        "PyPDF2>=3.0.0",
+        "requests>=2.28.0",
+        "tqdm>=4.65.0",
+        "colorama>=0.4.6",
     ],
+    extras_require={
+        "ocr": [
+            "pytesseract>=0.3.10",
+            "pdf2image>=1.16.3",
+            "pillow>=9.0.0",
+        ],
+    },
     author="Hunter Rose",
     # author_email="example@example.com",
     description="A comprehensive legal document analysis and defense generation system",
