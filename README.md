@@ -15,6 +15,10 @@ This system processes legal documents in a two-step workflow:
 1. **Document Analysis**: Extracts text from PDFs and analyzes them using customizable legal questions
 2. **Defense Generation**: Creates a comprehensive defense strategy, action items, and timeline based on the analysis
 
+## Example Usage
+
+[Show Terminal Example](https://asciinema.org/a/MMJqpIhKKYTtEWw9OxRdZViAm)
+
 ## Requirements
 
 - Python 3.8+
@@ -291,9 +295,9 @@ Themis includes automatic OCR (Optical Character Recognition) support for scanne
 
 1. The PDF is first processed using the standard PyPDF2 extraction
 2. If minimal text is found, OCR is automatically attempted:
-   - The PDF is converted to images using pdf2image
-   - Each image is processed with pytesseract for text recognition
-   - If OCR produces better results, the OCR text is used
+    - The PDF is converted to images using pdf2image
+    - Each image is processed with pytesseract for text recognition
+    - If OCR produces better results, the OCR text is used
 
 ### OCR Performance Considerations
 
