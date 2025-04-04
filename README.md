@@ -10,7 +10,7 @@ Themis analyzes legal documents and generates defense strategies using Large Lan
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/Themis.git
+git clone https://github.com/HunterR0se/Themis.git
 cd Themis
 
 # Create and activate virtual environment
@@ -28,25 +28,31 @@ pip install pytesseract pdf2image pillow
 ### Basic Usage
 
 1. **Put your case PDF documents in a directory**:
-   ```
-   ~/Legal/MyCase/*.pdf
-   ```
+
+    ```
+    ~/Legal/MyCase/*.pdf
+    ```
 
 2. **Run Themis**:
-   ```bash
-   # Full analysis and defense generation
-   python themis.py full-process --case-dir ~/Legal/MyCase/
-   
-   # Or try with a specific model
-   python themis.py full-process deepseek-r1 --case-dir ~/Legal/MyCase/
-   
-   # Or run on all available models to compare results
-   python themis.py all-models --case-dir ~/Legal/MyCase/
-   ```
+
+    ```bash
+    # Full analysis and defense generation
+    python themis.py full-process --case-dir ~/Legal/MyCase/
+
+    # Or try with a specific model
+    python themis.py full-process deepseek-r1 --case-dir ~/Legal/MyCase/
+
+    # Or run on all available models to compare results
+    python themis.py all-models --case-dir ~/Legal/MyCase/
+    ```
 
 3. **View results** in your case directory:
-   - `YYYYMMDD_modelname.md` - Complete report
-   - `YYYYMMDD_modelname/` - All detailed outputs
+    - `YYYYMMDD_modelname.md` - Complete report
+    - `YYYYMMDD_modelname/` - All detailed outputs
+
+## Demo
+
+[Watch the Themis Demo (Asciinema)](https://asciinema.org/a/MMJqpIhKKYTtEWw9OxRdZViAm)
 
 ## Example Outputs
 
