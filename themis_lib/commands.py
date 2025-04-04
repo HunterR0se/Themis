@@ -130,7 +130,8 @@ def full_process_command(args):
         model=args.model,
         dir=args.case_dir,
         questions=args.questions,
-        verbose=args.verbose
+        verbose=args.verbose,
+        ollama_api_url=args.ollama_api_url  # Add this line
     )
     
     analysis_success = analyze_command(analysis_args)
@@ -143,7 +144,8 @@ def full_process_command(args):
     defense_args = argparse.Namespace(
         model=args.model,
         case_dir=args.case_dir,
-        analysis=None  # Use the default analysis file based on model
+        analysis=None,  # Use the default analysis file based on model
+        ollama_api_url=args.ollama_api_url  # Add this line
     )
     
     defense_success = defend_command(defense_args)
