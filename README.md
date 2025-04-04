@@ -19,6 +19,10 @@ This system processes legal documents in a two-step workflow:
 
 [Show Terminal Example](https://asciinema.org/a/MMJqpIhKKYTtEWw9OxRdZViAm)
 
+## Example Results
+
+[Full SBF Analysis from Openthinker](example/sbf_full.md)
+
 ## Requirements
 
 - Python 3.8+
