@@ -14,7 +14,8 @@ from themis_lib.utils import (
     load_questions_from_file, 
     extract_text_from_pdf, 
     query_ollama, 
-    setup_logging
+    setup_logging,
+    sanitize_model_name
 )
 
 class CaseAnalyzer:
@@ -23,6 +24,7 @@ class CaseAnalyzer:
     def __init__(self, case_dir, model=DEFAULT_MODEL, api_url=None, run_dir=None):
         self.case_dir = Path(case_dir).expanduser()
         self.model = model
+        self.sanitized_model = sanitize_model_name(model)
         self.api_url = api_url
         
         # Use the provided run directory or create a new one
@@ -30,7 +32,8 @@ class CaseAnalyzer:
             self.output_dir = Path(run_dir)
         else:
             # Create a date and model-specific directory in the case directory
-            self.output_dir = self.case_dir / f"{datetime.now().strftime('%Y%m%d')}_{self.model}"
+            date_str = datetime.now().strftime('%Y%m%d')
+            self.output_dir = self.case_dir / f"{date_str}_{self.sanitized_model}"
             self.output_dir.mkdir(parents=True, exist_ok=True)
         
         # Cache files are stored in the output directory

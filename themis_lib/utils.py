@@ -15,6 +15,12 @@ from colorama import Fore, Style
 from themis_lib.ui import print_status
 from themis_lib.config import DEFAULT_QUESTIONS_FILE, FALLBACK_QUESTIONS, OLLAMA_API_URL
 
+def sanitize_model_name(model_name):
+    """Sanitize model name for use in filenames by replacing slashes and special characters"""
+    # Replace slashes, colons and other problematic chars with underscores
+    sanitized = re.sub(r'[\\\/\:\*\?\"\<\>\|]', '_', model_name)
+    return sanitized
+
 def setup_logging(log_path, logger_name):
     """Setup logging with a specific logger name"""
     logger = logging.getLogger(logger_name)

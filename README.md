@@ -25,6 +25,8 @@ This system processes legal documents in a two-step workflow:
 
 [Full SBF Analysis from QwQ](example/sbf_qwq.md)
 
+[Full SBF Analysis from Initium/Law](example/sbf_initium_law.md)
+
 ## Requirements
 
 - Python 3.8+

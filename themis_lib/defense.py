@@ -9,7 +9,7 @@ from colorama import Fore
 
 from themis_lib.ui import print_status
 from themis_lib.config import DEFAULT_MODEL
-from themis_lib.utils import query_ollama, setup_logging
+from themis_lib.utils import query_ollama, setup_logging, sanitize_model_name
 
 class DefenseGenerator:
     """Generates defense materials based on document analysis results"""
@@ -17,6 +17,7 @@ class DefenseGenerator:
     def __init__(self, case_dir, model=DEFAULT_MODEL, analysis_file=None, api_url=None, run_dir=None):
         self.case_dir = Path(case_dir).expanduser()
         self.model = model
+        self.sanitized_model = sanitize_model_name(model)
         self.api_url = api_url
 
         # Use the provided run directory or create a new one
@@ -24,7 +25,8 @@ class DefenseGenerator:
             self.output_dir = Path(run_dir)
         else:
             # Create a date and model-specific directory in the case directory
-            self.output_dir = self.case_dir / f"{datetime.now().strftime('%Y%m%d')}_{self.model}"
+            date_str = datetime.now().strftime('%Y%m%d')
+            self.output_dir = self.case_dir / f"{date_str}_{self.sanitized_model}"
             self.output_dir.mkdir(parents=True, exist_ok=True)
 
         print_status(f"Initializing defense generator with model: {Fore.CYAN}{model}{Fore.GREEN}", Fore.GREEN)
@@ -36,12 +38,12 @@ class DefenseGenerator:
             self.analysis_file = Path(analysis_file).expanduser()
         else:
             # First check in the output directory
-            output_dir_analysis = self.output_dir / f"document_analysis_{model}.json"
+            output_dir_analysis = self.output_dir / f"document_analysis_{self.sanitized_model}.json"
             if output_dir_analysis.exists():
                 self.analysis_file = output_dir_analysis
             else:
                 # Fallback to case directory
-                self.analysis_file = self.case_dir / f"document_analysis_{model}.json"
+                self.analysis_file = self.case_dir / f"document_analysis_{self.sanitized_model}.json"
 
         print_status(f"Using analysis file: {Fore.CYAN}{self.analysis_file}{Fore.GREEN}", Fore.GREEN)
 

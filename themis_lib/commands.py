@@ -10,7 +10,12 @@ from datetime import datetime
 from colorama import Fore
 
 from themis_lib.ui import print_status
-from themis_lib.utils import check_ollama_connection, load_questions_from_file, generate_markdown_summary
+from themis_lib.utils import (
+    check_ollama_connection, 
+    load_questions_from_file, 
+    generate_markdown_summary,
+    sanitize_model_name
+)
 from themis_lib.config import DEFAULT_QUESTIONS_FILE, FALLBACK_QUESTIONS
 from themis_lib.analyzer import CaseAnalyzer
 from themis_lib.defense import DefenseGenerator
@@ -26,6 +31,9 @@ def analyze_command(args):
         print_status("Cannot proceed without connection to Ollama server", Fore.RED)
         return False
     
+    # Sanitize model name for use in filenames
+    sanitized_model = sanitize_model_name(args.model)
+    
     # Determine output directory
     if hasattr(args, 'run_dir'):
         # Use the provided run directory (for full-process command)
@@ -33,7 +41,7 @@ def analyze_command(args):
     else:
         # Create a new run directory (for standalone analyze command)
         date_str = datetime.now().strftime('%Y%m%d')
-        run_dir = Path(args.dir) / f"{date_str}_{args.model}"
+        run_dir = Path(args.dir) / f"{date_str}_{sanitized_model}"
         run_dir.mkdir(parents=True, exist_ok=True)
     
     # Initialize analyzer with specified model and run directory
@@ -69,12 +77,12 @@ def analyze_command(args):
     time_str = f"{int(hours)}h {int(minutes)}m {int(seconds)}s" if hours else f"{int(minutes)}m {int(seconds)}s"
     
     # Save results with model name in filename (in the run directory)
-    output_file = run_dir / f"document_analysis_{args.model}.json"
+    output_file = run_dir / f"document_analysis_{sanitized_model}.json"
     with open(output_file, 'w') as f:
         json.dump(results, f, indent=4)
     
     # Generate a human-readable markdown version (in the run directory)
-    md_output_file = run_dir / f"document_analysis_{args.model}.md"
+    md_output_file = run_dir / f"document_analysis_{sanitized_model}.md"
     
     # Create the markdown summary
     generate_markdown_summary(results, args.model, md_output_file)
@@ -98,6 +106,9 @@ def defend_command(args):
         print_status("Cannot proceed without connection to Ollama server", Fore.RED)
         return False
     
+    # Sanitize model name for use in filenames
+    sanitized_model = sanitize_model_name(args.model)
+    
     # Determine output directory
     if hasattr(args, 'run_dir'):
         # Use the provided run directory (for full-process command)
@@ -105,7 +116,7 @@ def defend_command(args):
     else:
         # Create a new run directory (for standalone defend command)
         date_str = datetime.now().strftime('%Y%m%d')
-        run_dir = Path(args.case_dir) / f"{date_str}_{args.model}"
+        run_dir = Path(args.case_dir) / f"{date_str}_{sanitized_model}"
         run_dir.mkdir(parents=True, exist_ok=True)
     
     try:
@@ -115,8 +126,8 @@ def defend_command(args):
             analysis_file = Path(args.analysis).expanduser()
         else:
             # Check both locations for the analysis file - run directory and case directory
-            run_dir_analysis = run_dir / f"document_analysis_{args.model}.json"
-            case_dir_analysis = Path(args.case_dir) / f"document_analysis_{args.model}.json"
+            run_dir_analysis = run_dir / f"document_analysis_{sanitized_model}.json"
+            case_dir_analysis = Path(args.case_dir) / f"document_analysis_{sanitized_model}.json"
             
             if run_dir_analysis.exists():
                 analysis_file = run_dir_analysis
@@ -156,10 +167,11 @@ def full_process_command(args):
     
     case_dir = args.case_dir
     model = args.model
+    sanitized_model = sanitize_model_name(model)
     date_str = datetime.now().strftime('%Y%m%d')
     
     # Create the date and model-specific directory that will contain all outputs
-    run_dir = Path(case_dir) / f"{date_str}_{model}"
+    run_dir = Path(case_dir) / f"{date_str}_{sanitized_model}"
     run_dir.mkdir(parents=True, exist_ok=True)
     
     # Run analysis first
@@ -198,13 +210,13 @@ def full_process_command(args):
         # Paths to all the generated files
         defense_dir = run_dir / "defense_materials"
         
-        analysis_md_path = run_dir / f"document_analysis_{model}.md"
+        analysis_md_path = run_dir / f"document_analysis_{sanitized_model}.md"
         defense_strategy_path = defense_dir / "defense_strategy.md"
         action_items_path = defense_dir / "action_items.md"
         timeline_path = defense_dir / "case_timeline.md"
         
         # Create combined document in the case directory (not in run_dir)
-        combined_filename = f"{date_str}_{model}.md"
+        combined_filename = f"{date_str}_{sanitized_model}.md"
         combined_path = Path(case_dir) / combined_filename
         
         combine_documents(
