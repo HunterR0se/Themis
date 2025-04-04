@@ -32,7 +32,8 @@ from themis_lib.config import (
 from themis_lib.commands import (
     analyze_command,
     defend_command,
-    full_process_command
+    full_process_command,
+    all_models_command
 )
 
 def main():
@@ -60,6 +61,12 @@ Examples:
   
   # Generate defense using a specific analysis file:
   themis defend --case-dir ~/Legal/MyCase/ --analysis ~/path/to/specific_analysis.json
+  
+  # Run the full process with all available models:
+  themis all-models --case-dir ~/Legal/MyCase/
+  
+  # Run the full process with specific models only:
+  themis all-models --case-dir ~/Legal/MyCase/ --models deepseek-r1 initium/law
   
   # Connect to a remote Ollama server:
   themis analyze --ollama-host 192.168.1.100 --dir ~/Legal/MyCase/
@@ -115,6 +122,18 @@ Examples:
     full_process_parser.add_argument('--verbose', '-v', action='store_true',
                                    help='Enable verbose output')
     full_process_parser.set_defaults(func=full_process_command)
+    
+    # Create parser for "all-models" command
+    all_models_parser = subparsers.add_parser('all-models', help='Run full process with all available models')
+    all_models_parser.add_argument('--case-dir', '-d', required=True,
+                                 help='Directory containing case documents (REQUIRED)')
+    all_models_parser.add_argument('--models', '-m', nargs='*', 
+                                 help='Specific models to use (default: all available)')
+    all_models_parser.add_argument('--questions', '-q', default=None,
+                                 help='Path to markdown file with questions (for analysis phase)')
+    all_models_parser.add_argument('--verbose', '-v', action='store_true',
+                                 help='Enable verbose output')
+    all_models_parser.set_defaults(func=all_models_command)
     
     # Create parser for "config" command
     config_parser = subparsers.add_parser('config', help='Show or modify configuration')

@@ -24,6 +24,8 @@ def print_colorful_help():
   {Fore.MAGENTA}analyze{Style.RESET_ALL}       Analyze legal documents using an LLM
   {Fore.MAGENTA}defend{Style.RESET_ALL}        Generate defense materials from analysis
   {Fore.MAGENTA}full-process{Style.RESET_ALL}  Run both analysis and defense generation
+  {Fore.MAGENTA}all-models{Style.RESET_ALL}    Run full process with multiple models
+  {Fore.MAGENTA}config{Style.RESET_ALL}        View or modify configuration settings
   
 {Fore.YELLOW}COMMONLY USED OPTIONS:{Style.RESET_ALL}
   {Fore.GREEN}--dir{Style.RESET_ALL}, {Fore.GREEN}-d{Style.RESET_ALL}          Directory with PDF documents (for analyze)
@@ -42,10 +44,14 @@ def print_colorful_help():
   # Run full process with custom questions:
   {Fore.CYAN}python themis.py full-process{Style.RESET_ALL} --case-dir ~/Cases/Davis {Fore.GREEN}--questions{Style.RESET_ALL} my_questions.md
   
+  # Run with all available models:
+  {Fore.CYAN}python themis.py all-models{Style.RESET_ALL} --case-dir ~/Cases/Wilson
+  
 {Fore.YELLOW}FOR MORE DETAILS:{Style.RESET_ALL}
   {Fore.CYAN}python themis.py{Style.RESET_ALL} {Fore.MAGENTA}analyze{Style.RESET_ALL} --help
   {Fore.CYAN}python themis.py{Style.RESET_ALL} {Fore.MAGENTA}defend{Style.RESET_ALL} --help
   {Fore.CYAN}python themis.py{Style.RESET_ALL} {Fore.MAGENTA}full-process{Style.RESET_ALL} --help
+  {Fore.CYAN}python themis.py{Style.RESET_ALL} {Fore.MAGENTA}all-models{Style.RESET_ALL} --help
 """
     
     print(banner)

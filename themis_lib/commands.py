@@ -20,6 +20,10 @@ from themis_lib.config import DEFAULT_QUESTIONS_FILE, FALLBACK_QUESTIONS
 from themis_lib.analyzer import CaseAnalyzer
 from themis_lib.defense import DefenseGenerator
 from themis_lib.document import combine_documents
+from themis_lib.batch import (
+    get_available_models,
+    generate_comparison_summary
+)
 
 def analyze_command(args):
     """Handle the analyze subcommand logic"""
@@ -236,3 +240,80 @@ def full_process_command(args):
     
     print_status("Full processing completed successfully!", Fore.GREEN)
     return True
+
+def all_models_command(args):
+    """Handle the all-models subcommand logic - run full process for multiple models"""
+    print_status(f"Multi-Model Legal Document Processing", Fore.MAGENTA)
+    print_status(f"=================================", Fore.MAGENTA)
+    
+    case_dir = args.case_dir
+    
+    # Check connection to Ollama server
+    if not check_ollama_connection(args.ollama_api_url):
+        print_status("Cannot proceed without connection to Ollama server", Fore.RED)
+        return False
+    
+    # Get models to process
+    if hasattr(args, 'models') and args.models:
+        models = args.models
+        print_status(f"Using specified models: {', '.join(models)}", Fore.GREEN)
+    else:
+        # Get all available models from Ollama
+        models = get_available_models(args.ollama_api_url)
+        if not models:
+            print_status("No models available on the Ollama server!", Fore.RED)
+            return False
+        print_status(f"Found {len(models)} models: {', '.join(models)}", Fore.GREEN)
+    
+    # Process each model
+    successful_models = []
+    failed_models = []
+    
+    print_status(f"\nProcessing case directory: {case_dir}", Fore.MAGENTA)
+    print_status(f"Total models to process: {len(models)}", Fore.MAGENTA)
+    
+    for i, model in enumerate(models, 1):
+        print_status(f"\n{'-'*70}", Fore.MAGENTA)
+        print_status(f"Processing model {i}/{len(models)}: {Fore.CYAN}{model}{Fore.MAGENTA}", Fore.MAGENTA)
+        print_status(f"{'-'*70}", Fore.MAGENTA)
+        
+        # Create args for full_process_command
+        process_args = argparse.Namespace(
+            model=model,
+            case_dir=case_dir,
+            questions=args.questions if hasattr(args, 'questions') else None,
+            verbose=args.verbose if hasattr(args, 'verbose') else False,
+            ollama_api_url=args.ollama_api_url
+        )
+        
+        try:
+            start_time = time.time()
+            success = full_process_command(process_args)
+            elapsed_time = time.time() - start_time
+            
+            if success:
+                print_status(f"✓ Successfully processed with model {Fore.CYAN}{model}{Fore.GREEN} in {int(elapsed_time)}s", Fore.GREEN)
+                successful_models.append(model)
+            else:
+                print_status(f"✗ Failed to process with model {Fore.RED}{model}{Fore.RED}", Fore.RED)
+                failed_models.append(model)
+        except Exception as e:
+            print_status(f"Error processing model {model}: {str(e)}", Fore.RED)
+            failed_models.append(model)
+    
+    # Generate comparison summary
+    generate_comparison_summary(case_dir, successful_models, failed_models)
+    
+    # Print final summary
+    print_status("\n" + "="*70, Fore.MAGENTA)
+    print_status(f"MULTI-MODEL PROCESSING COMPLETE", Fore.MAGENTA)
+    print_status("="*70, Fore.MAGENTA)
+    print_status(f"Total models processed: {len(models)}", Fore.MAGENTA)
+    print_status(f"Successful: {Fore.GREEN}{len(successful_models)}{Fore.MAGENTA} ({', '.join(successful_models)})", Fore.MAGENTA)
+    
+    if failed_models:
+        print_status(f"Failed: {Fore.RED}{len(failed_models)}{Fore.MAGENTA} ({', '.join(failed_models)})", Fore.MAGENTA)
+    else:
+        print_status(f"Failed: {Fore.GREEN}0{Fore.MAGENTA} (none)", Fore.MAGENTA)
+    
+    return len(failed_models) == 0  # Success if all models were processed successfully

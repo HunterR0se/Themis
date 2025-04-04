@@ -27,6 +27,8 @@ This system processes legal documents in a two-step workflow:
 
 [Full SBF Analysis from Initium/Law](example/sbf_initium_law.md)
 
+[Full SBF Analysis from Llama 3.3](example/sbf_llama3_3.md)
+
 ## Requirements
 
 - Python 3.8+
@@ -129,6 +131,10 @@ YOUR_CASE_DIR/                           # Your specified case directory
 
 This structure centralizes all outputs in a single, organized directory tree, with only the source PDFs and the final combined report at the case root level.
 
+### Model Name Handling
+
+When working with model names that contain slashes or other special characters (like "initium/law_model:latest"), Themis automatically sanitizes these names for use in filenames by replacing problematic characters with underscores. This ensures compatibility with all file systems.
+
 ## How to Use
 
 ### Step 1: Customize Questions (Optional)
@@ -158,6 +164,7 @@ python themis.py command [model] [options]
 - `analyze`: Perform document analysis
 - `defend`: Generate defense materials
 - `full-process`: Perform both analysis and defense generation
+- `all-models`: Run full process with multiple models
 - `config`: View or modify configuration settings
 
 #### Required Arguments:
@@ -191,6 +198,9 @@ python themis.py analyze --dir MyCase/
 
 # Just generate defense materials for a case:
 python themis.py defend --case-dir MyCase/
+
+# Run the full process with all available models:
+python themis.py all-models --case-dir MyCase/
 ```
 
 ### Using a Different Model
@@ -221,6 +231,9 @@ python themis.py --ollama-host 192.168.1.100 analyze --dir ~/Legal/MyCase/
 
 # Generate defense with a specific model and Ollama server:
 python themis.py --ollama-host api.example.com --ollama-port 8000 defend deepseek-r1 --case-dir ~/Legal/MyCase/
+
+# Run with specific models only:
+python themis.py all-models --case-dir ~/Legal/MyCase/ --models llama3 gpt-4o
 
 # Show current configuration:
 python themis.py config --show
@@ -277,6 +290,27 @@ When using the `full-process` command, Themis automatically creates a comprehens
 This combined document is saved as `YYYYMMDD_full_modelname.md` in the case directory for easy access to all information in one place.
 
 ## Advanced Features
+
+### Batch Processing with Multiple Models
+
+Themis includes a built-in command for running the full analysis and defense generation with multiple Ollama models sequentially:
+
+```bash
+# Run with all available models on the Ollama server
+python themis.py all-models --case-dir ~/Legal/MyCase/
+
+# Run with specific models only
+python themis.py all-models --case-dir ~/Legal/MyCase/ --models llama3 mistral-7b deepseek-r1
+```
+
+The all-models command will:
+
+1. Automatically detect all available models on your Ollama server (or use the ones you specify)
+2. Run the full Themis process with each model sequentially
+3. Generate a comparison summary (`model_comparison_YYYYMMDD.md`) that links to all the outputs for easy comparison
+4. Provide statistics on model performance and processing times
+
+This is especially valuable for comparing outputs from different LLMs on the same legal case to identify the most effective model for your specific needs.
 
 ### Caching System
 
