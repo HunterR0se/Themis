@@ -17,7 +17,7 @@ This system processes legal documents in a two-step workflow:
 
 ## Example Usage
 
-[Show Terminal Example](https://asciinema.org/a/MMJqpIhKKYTtEWw9OxRdZViAm)
+[Ascii Terminal Example](https://asciinema.org/a/MMJqpIhKKYTtEWw9OxRdZViAm)
 
 ## Example Results
 
