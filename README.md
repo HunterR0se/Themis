@@ -59,6 +59,8 @@ pip install pytesseract pdf2image pillow
 - [SBF Analysis with Openthinker](example/sbf_full.md)
 - [SBF Analysis with QwQ](example/sbf_qwq.md)
 - [SBF Analysis with Initium/Law](example/sbf_initium_law.md)
+- [SBF Analysis with Mistral](example/sbf_mistral.md)
+- Many more in the `example` folder
 
 ## Core Commands
 
