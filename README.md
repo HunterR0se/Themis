@@ -1,118 +1,109 @@
-# Themis
-
-Themis - imparting wisdom on the principles of law and justice
+# Themis - Legal Document Analysis System
 
 ![Themis](images/themis_help.png)
 
-## Legal Analysis System
+Themis analyzes legal documents and generates defense strategies using Large Language Models.
 
-A comprehensive system for analyzing legal case documents and generating defense materials using Large Language Models (LLMs) via Ollama.
+## Quick Start
 
-## Overview
-
-This system processes legal documents in a two-step workflow:
-
-1. **Document Analysis**: Extracts text from PDFs and analyzes them using customizable legal questions
-2. **Defense Generation**: Creates a comprehensive defense strategy, action items, and timeline based on the analysis
-
-## Example Usage
-
-[Ascii Terminal Example](https://asciinema.org/a/MMJqpIhKKYTtEWw9OxRdZViAm)
-
-## Example Results (Full Analyze & Defend)
-
-[Full SBF Analysis from Openthinker](example/sbf_full.md)
-
-[Full SBF Analysis from QwQ](example/sbf_qwq.md)
-
-[Full SBF Analysis from Initium/Law](example/sbf_initium_law.md)
-
-[Full SBF Analysis from Llama 3.3](example/sbf_llama3_3.md)
-
-[Full SBF Analysis from Dolphin 3](example/sbf_dolphin3.md)
-
-## Requirements
-
-- Python 3.8+
-- PyPDF2
-- requests
-- tqdm (for progress bars)
-- colorama (for colored output)
-- An Ollama server running with LLMs
-
-### Optional Requirements
-
-- tesseract-ocr and pytesseract (for OCR support with scanned PDFs)
-- pdf2image and poppler-utils (for converting PDFs to images for OCR)
-
-Themis will automatically attempt to use OCR when it detects minimal text in a PDF, but you need to install the OCR dependencies:
+### Installation
 
 ```bash
-# Install Python packages
-pip install themis[ocr]  # When installing from pip
-# or
-pip install pytesseract pdf2image pillow  # For manual installation
-
-# Install system packages
-sudo apt-get install tesseract-ocr poppler-utils  # For Debian/Ubuntu
-# or
-brew install tesseract poppler  # For macOS with Homebrew
-```
-
-## Setup
-
-### Virtual Environment
-
-```bash
-# Create a virtual environment (if not already created)
+# Clone the repository
+git clone https://github.com/yourusername/Themis.git
 cd Themis
+
+# Create and activate virtual environment
 python -m venv legalenv
+source legalenv/bin/activate  # On Windows: .\legalenv\Scripts\activate
 
-# Activate the virtual environment
-source legalenv/bin/activate
-
-# Install required packages
+# Install dependencies
 pip install PyPDF2 requests tqdm colorama
+
+# Install OCR support (optional)
+pip install pytesseract pdf2image pillow
+# Plus system dependencies: tesseract-ocr and poppler-utils
 ```
 
-### Configuring Ollama
+### Basic Usage
 
-By default, Themis is configured to connect to an Ollama server running on localhost (http://localhost:11434). You can connect to a remote Ollama server in two ways:
+1. **Put your case PDF documents in a directory**:
+   ```
+   ~/Legal/MyCase/*.pdf
+   ```
 
-1. Command-line options:
+2. **Run Themis**:
+   ```bash
+   # Full analysis and defense generation
+   python themis.py full-process --case-dir ~/Legal/MyCase/
+   
+   # Or try with a specific model
+   python themis.py full-process deepseek-r1 --case-dir ~/Legal/MyCase/
+   
+   # Or run on all available models to compare results
+   python themis.py all-models --case-dir ~/Legal/MyCase/
+   ```
 
-    ```bash
-    python themis.py --ollama-host 192.168.1.100 --ollama-port 11434 analyze --dir ~/Legal/MyCase/
-    ```
+3. **View results** in your case directory:
+   - `YYYYMMDD_modelname.md` - Complete report
+   - `YYYYMMDD_modelname/` - All detailed outputs
 
-2. Configuration file:
-   The first time you run Themis with specific options, a configuration file is automatically created at `~/.themis/themis.cfg`. This saves your settings including model preferences and Ollama server details, allowing you to run subsequent commands without repeating these options.
+## Example Outputs
 
-You can view or reset your configuration with:
+- [SBF Analysis with Openthinker](example/sbf_full.md)
+- [SBF Analysis with QwQ](example/sbf_qwq.md)
+- [SBF Analysis with Initium/Law](example/sbf_initium_law.md)
+
+## Core Commands
 
 ```bash
-python themis.py config --show   # Show current configuration
-python themis.py config --reset  # Reset to defaults
+# Analyze documents
+python themis.py analyze --dir ~/Legal/MyCase/
+
+# Generate defense materials from analysis
+python themis.py defend --case-dir ~/Legal/MyCase/
+
+# Run full process (analysis + defense)
+python themis.py full-process --case-dir ~/Legal/MyCase/
+
+# Run with all available models
+python themis.py all-models --case-dir ~/Legal/MyCase/
 ```
 
-## Main Script Overview
+## Output Files
 
-### themis.py
+Themis creates:
 
-A unified script that provides both document analysis and defense generation functionality.
+1. **Document Analysis** - Questions and answers about each document
+2. **Defense Strategy** - Legal strategy based on the analysis
+3. **Action Items** - Tasks and next steps for the defense
+4. **Case Timeline** - Chronological sequence of relevant events
+5. **Combined Report** - All of the above in a single document
 
-#### Key Features:
+## Advanced Options
 
-- External questions file for easy customization
-- Caching system to avoid re-analyzing documents
-- Real-time progress display
-- Organized log and output file structure
-- Can reload questions between documents for on-the-fly adjustments
-- Synthesizes information across all documents
-- Generates comprehensive defense materials
-- Clear progress display
+```bash
+# Use a specific model
+python themis.py full-process deepseek-r1 --case-dir ~/Legal/MyCase/
 
-## Directory Structure
+# Use custom questions
+python themis.py analyze --dir ~/Legal/MyCase/ --questions my_questions.md
+
+# Connect to a remote Ollama server
+python themis.py --ollama-host 192.168.1.100 analyze --dir ~/Legal/MyCase/
+
+# Compare specific models
+python themis.py all-models --case-dir ~/Legal/MyCase/ --models llama3 mistral gpt-4o
+```
+
+---
+
+## Detailed Information
+
+<details>
+<summary>Click to expand for more details</summary>
+
+### Directory Structure
 
 Themis organizes case files according to the following structure:
 
@@ -131,236 +122,51 @@ YOUR_CASE_DIR/                           # Your specified case directory
   │       └── case_timeline.md           # Case timeline
 ```
 
-This structure centralizes all outputs in a single, organized directory tree, with only the source PDFs and the final combined report at the case root level.
-
 ### Model Name Handling
 
-When working with model names that contain slashes or other special characters (like "initium/law_model:latest"), Themis automatically sanitizes these names for use in filenames by replacing problematic characters with underscores. This ensures compatibility with all file systems.
+When working with model names that contain slashes or other special characters (like "initium/law_model:latest"), Themis automatically sanitizes these names for use in filenames.
 
-## How to Use
+### OCR Support
 
-### Step 1: Customize Questions (Optional)
+Themis includes automatic OCR (Optical Character Recognition) for scanned PDFs when needed:
 
-The system comes with a default `questions.md` file that contains questions specifically designed for legal document analysis. You can customize these questions by editing this file:
-
-```markdown
-# Questions for Legal Document Analysis
-
-1. What are the central claims or charges against the defendant in this document?
-2. What key evidence is presented to support these allegations?
-   ...
-```
-
-If the questions.md file cannot be found, the system falls back to built-in default questions.
-
-You can edit the questions file even while the analyzer is running - changes will apply to the next document.
-
-### Step 2: Run Themis
-
-```bash
-python themis.py command [model] [options]
-```
-
-#### Commands:
-
-- `analyze`: Perform document analysis
-- `defend`: Generate defense materials
-- `full-process`: Perform both analysis and defense generation
-- `all-models`: Run full process with multiple models
-- `config`: View or modify configuration settings
-
-#### Required Arguments:
-
-- `--dir` or `-d`: Directory containing PDF documents (for analyze)
-- `--case-dir` or `-d`: Directory containing case documents (for defend and full-process)
-
-#### Optional Arguments:
-
-- `model`: Specify the Ollama model to use (default: from configuration or "mistral")
-- `--ollama-host`: Specify the Ollama server hostname or IP (default: "localhost")
-- `--ollama-port`: Specify the Ollama server port (default: 11434)
-- `--questions` or `-q`: Specify the questions file to use
-- `--analysis` or `-a`: Path to a specific analysis file (for defend command)
-- `--verbose` or `-v`: Enable verbose output
-
-## Examples
-
-### Basic Usage
-
-```bash
-# Activate the virtual environment
-cd Themis
-source legalenv/bin/activate
-
-# Run full analysis and defense generation on a specific case directory:
-python themis.py full-process --case-dir MyCase/
-
-# Just analyze documents in a case directory:
-python themis.py analyze --dir MyCase/
-
-# Just generate defense materials for a case:
-python themis.py defend --case-dir MyCase/
-
-# Run the full process with all available models:
-python themis.py all-models --case-dir MyCase/
-```
-
-### Using a Different Model
-
-```bash
-# Run with the deepseek-r1 model:
-python themis.py full-process deepseek-r1 --case-dir MyCase/
-
-# Analyze only with deepseek-r1:
-python themis.py analyze deepseek-r1 --dir MyCase/
-```
-
-### Custom Options
-
-```bash
-# Analyze with custom questions file:
-python themis.py analyze --dir MyCase/ --questions my_questions.md
-
-# Generate defense using a specific analysis file:
-python themis.py defend --case-dir MyCase/ --analysis MyCase/custom_analysis.json
-```
-
-### Advanced Options
-
-```bash
-# Connect to a remote Ollama server:
-python themis.py --ollama-host 192.168.1.100 analyze --dir ~/Legal/MyCase/
-
-# Generate defense with a specific model and Ollama server:
-python themis.py --ollama-host api.example.com --ollama-port 8000 defend deepseek-r1 --case-dir ~/Legal/MyCase/
-
-# Run with specific models only:
-python themis.py all-models --case-dir ~/Legal/MyCase/ --models llama3 gpt-4o
-
-# Show current configuration:
-python themis.py config --show
-
-# Reset to default configuration:
-python themis.py config --reset
-```
-
-## Output Files
-
-### Analysis Output
-
-The analysis results are structured as a JSON file containing:
-
-- Document filename
-- Answers to each question in the questions file
-
-A human-readable Markdown version is also created for easy viewing.
-
-### Defense Materials
-
-1. **defense_strategy.md**: Comprehensive legal defense strategy
-
-    - Key defense arguments
-    - Weaknesses in the prosecution's case
-    - Counter-arguments
-    - Evidence suggestions
-    - Legal precedents
-    - Strategic recommendations
-
-2. **action_items.md**: Specific tasks for the defense team
-
-    - Evidence collection tasks
-    - Witness interviews needed
-    - Legal research requirements
-    - Motion filing deadlines
-    - Expert consultation needs
-
-3. **case_timeline.md**: Chronological sequence of events
-    - Key dates and events
-    - Filing deadlines
-    - Procedural dates
-    - Relevant historical events
-
-### Combined Report
-
-When using the `full-process` command, Themis automatically creates a comprehensive combined report that includes:
-
-- All document analysis results with detailed Q&A
-- The complete defense strategy
-- The full list of action items
-- The case timeline
-
-This combined document is saved as `YYYYMMDD_full_modelname.md` in the case directory for easy access to all information in one place.
-
-## Advanced Features
-
-### Batch Processing with Multiple Models
-
-Themis includes a built-in command for running the full analysis and defense generation with multiple Ollama models sequentially:
-
-```bash
-# Run with all available models on the Ollama server
-python themis.py all-models --case-dir ~/Legal/MyCase/
-
-# Run with specific models only
-python themis.py all-models --case-dir ~/Legal/MyCase/ --models llama3 mistral-7b deepseek-r1
-```
-
-The all-models command will:
-
-1. Automatically detect all available models on your Ollama server (or use the ones you specify)
-2. Run the full Themis process with each model sequentially
-3. Generate a comparison summary (`model_comparison_YYYYMMDD.md`) that links to all the outputs for easy comparison
-4. Provide statistics on model performance and processing times
-
-This is especially valuable for comparing outputs from different LLMs on the same legal case to identify the most effective model for your specific needs.
+- Requires additional dependencies: `pytesseract`, `pdf2image`, and `poppler-utils`
+- Automatically used when minimal text is detected in a PDF
 
 ### Caching System
 
-The analyzer maintains a cache of analysis results to avoid redundant processing:
+Analysis results are cached to avoid re-analyzing documents unnecessarily. Each model has its own cache file.
 
-- Cache is stored in `YYYYMMDD_modelname/analysis_cache.json`
-- Documents that have already been analyzed with the same questions will use cached results
-- You can delete this file to force reanalysis of all documents
+### Batch Processing with Multiple Models
 
-### Real-time Question Updates
+The `all-models` command runs Themis with multiple models sequentially:
 
-You can modify the questions file while the analyzer is running:
+```bash
+python themis.py all-models --case-dir ~/Legal/MyCase/
+```
 
-- Questions are reloaded before each document is processed
-- This allows you to refine your questions based on what you see in previous results
-- Especially useful for long batches of documents
+This generates a comparison summary (`model_comparison_YYYYMMDD.md`) that links to all the outputs.
 
-### Multiple Models
+### Customizing Questions
 
-You can analyze the same documents with different LLMs:
+You can create a custom questions file (markdown format) to guide the analysis:
 
-- Each model's results are stored separately
-- Allows comparing analysis across different models
-- Can generate defense materials using your preferred model
+```markdown
+1. What are the central claims or charges against the defendant?
+2. What key evidence is presented to support these allegations?
+3. What are the legal issues identified in this document?
+```
 
-## OCR Support
+### Configuration
 
-Themis includes automatic OCR (Optical Character Recognition) support for scanned PDFs:
+Themis maintains a configuration file at `~/.themis/themis.cfg` but you can override settings:
 
-- When minimal text is detected in a PDF (less than 100 characters), OCR is automatically attempted
-- If the OCR libraries are not installed, appropriate warning messages are shown
-- OCR results are only used if they provide more text than the standard extraction method
+```bash
+# Show current configuration
+python themis.py config --show
 
-### How OCR Works in Themis
+# Reset to default configuration
+python themis.py config --reset
+```
 
-1. The PDF is first processed using the standard PyPDF2 extraction
-2. If minimal text is found, OCR is automatically attempted:
-    - The PDF is converted to images using pdf2image
-    - Each image is processed with pytesseract for text recognition
-    - If OCR produces better results, the OCR text is used
-
-### OCR Performance Considerations
-
-- OCR processing is significantly slower than standard text extraction
-- For large documents with many pages, OCR can take several minutes
-- Processing quality depends on the scanned document quality and resolution
-
-## Notes
-
-- The colorized terminal output enhances readability of progress and status information
-- Both scripts handle interruptions gracefully (Ctrl+C)
+</details>
