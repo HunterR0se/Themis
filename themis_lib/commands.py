@@ -14,6 +14,7 @@ from themis_lib.utils import check_ollama_connection, load_questions_from_file, 
 from themis_lib.config import DEFAULT_QUESTIONS_FILE, FALLBACK_QUESTIONS
 from themis_lib.analyzer import CaseAnalyzer
 from themis_lib.defense import DefenseGenerator
+from themis_lib.document import combine_documents
 
 def analyze_command(args):
     """Handle the analyze subcommand logic"""
@@ -125,13 +126,16 @@ def full_process_command(args):
     print_status(f"Legal Document Full Processing", Fore.MAGENTA)
     print_status(f"============================", Fore.MAGENTA)
     
+    case_dir = args.case_dir
+    model = args.model
+    
     # Run analysis first
     analysis_args = argparse.Namespace(
-        model=args.model,
-        dir=args.case_dir,
+        model=model,
+        dir=case_dir,
         questions=args.questions,
         verbose=args.verbose,
-        ollama_api_url=args.ollama_api_url  # Add this line
+        ollama_api_url=args.ollama_api_url
     )
     
     analysis_success = analyze_command(analysis_args)
@@ -142,10 +146,10 @@ def full_process_command(args):
     
     # Then run defense generation
     defense_args = argparse.Namespace(
-        model=args.model,
-        case_dir=args.case_dir,
+        model=model,
+        case_dir=case_dir,
         analysis=None,  # Use the default analysis file based on model
-        ollama_api_url=args.ollama_api_url  # Add this line
+        ollama_api_url=args.ollama_api_url
     )
     
     defense_success = defend_command(defense_args)
@@ -153,6 +157,32 @@ def full_process_command(args):
     if not defense_success:
         print_status("Defense generation phase failed", Fore.RED)
         return False
+    
+    # Create a combined document with all outputs
+    try:
+        # Paths to all the generated files
+        date_str = datetime.now().strftime('%Y%m%d')
+        defense_dir = Path(case_dir) / f"Defense-{date_str}-{model}"
+        
+        analysis_md_path = Path(case_dir) / f"document_analysis_{model}.md"
+        defense_strategy_path = defense_dir / "defense_strategy.md"
+        action_items_path = defense_dir / "action_items.md"
+        timeline_path = defense_dir / "case_timeline.md"
+        
+        # Create combined document
+        combined_path = combine_documents(
+            case_dir=case_dir,
+            model_name=model,
+            analysis_md_path=analysis_md_path,
+            defense_strategy_path=defense_strategy_path,
+            action_items_path=action_items_path,
+            timeline_path=timeline_path
+        )
+        
+        print_status(f"Combined document created: {Fore.CYAN}{combined_path}{Fore.GREEN}", Fore.GREEN)
+    except Exception as e:
+        print_status(f"Warning: Could not create combined document: {str(e)}", Fore.YELLOW)
+        print_status("Individual documents are still available", Fore.YELLOW)
     
     print_status("Full processing completed successfully!", Fore.GREEN)
     return True

@@ -111,8 +111,9 @@ The system organizes files within your specified case directory:
 ```
 YOUR_CASE_DIR/                           # Your specified case directory
   ├── *.pdf                              # Source PDF documents
-  ├── document_analysis_modelname.json   # Analysis results (root level copy)
-  ├── document_analysis_modelname.md     # Human-readable analysis (root level)
+  ├── document_analysis_modelname.json   # Analysis results (JSON)
+  ├── document_analysis_modelname.md     # Analysis results (readable)
+  ├── YYYYMMDD_full_modelname.md         # Combined report (when using full-process)
   ├── YYYYMMDD_modelname/                # Date and model-specific directory
   │   ├── case_analysis.log              # Analysis log file
   │   ├── analysis_cache.json            # Cache to speed up repeat runs
@@ -236,6 +237,8 @@ The analysis results are structured as a JSON file containing:
 - Document filename
 - Answers to each question in the questions file
 
+A human-readable Markdown version is also created for easy viewing.
+
 ### Defense Materials
 
 1. **defense_strategy.md**: Comprehensive legal defense strategy
@@ -260,6 +263,17 @@ The analysis results are structured as a JSON file containing:
     - Filing deadlines
     - Procedural dates
     - Relevant historical events
+
+### Combined Report
+
+When using the `full-process` command, Themis automatically creates a comprehensive combined report that includes:
+
+- All document analysis results with detailed Q&A
+- The complete defense strategy
+- The full list of action items
+- The case timeline
+
+This combined document is saved as `YYYYMMDD_full_modelname.md` in the case directory for easy access to all information in one place.
 
 ## Advanced Features
 
