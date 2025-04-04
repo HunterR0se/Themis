@@ -23,6 +23,8 @@ This system processes legal documents in a two-step workflow:
 
 [Full SBF Analysis from Openthinker](example/sbf_full.md)
 
+[Full SBF Analysis from QwQ](example/sbf_qwq.md)
+
 ## Requirements
 
 - Python 3.8+
@@ -104,29 +106,26 @@ A unified script that provides both document analysis and defense generation fun
 - Generates comprehensive defense materials
 - Clear progress display
 
-## File Organization
+## Directory Structure
 
-The system organizes files within your specified case directory:
+Themis organizes case files according to the following structure:
 
 ```
 YOUR_CASE_DIR/                           # Your specified case directory
   ├── *.pdf                              # Source PDF documents
-  ├── document_analysis_modelname.json   # Analysis results (JSON)
-  ├── document_analysis_modelname.md     # Analysis results (readable)
-  ├── YYYYMMDD_full_modelname.md         # Combined report (when using full-process)
+  ├── YYYYMMDD_modelname.md              # Combined report (when using full-process)
   ├── YYYYMMDD_modelname/                # Date and model-specific directory
   │   ├── case_analysis.log              # Analysis log file
   │   ├── analysis_cache.json            # Cache to speed up repeat runs
-  │   ├── document_analysis_modelname.json  # Analysis results
+  │   ├── document_analysis_modelname.json   # Analysis results (JSON)
+  │   ├── document_analysis_modelname.md     # Analysis results (readable)
   │   └── defense_materials/             # Generated defense materials
-  │       ├── defense_strategy.md
-  │       ├── action_items.md
-  │       └── case_timeline.md
-  └── Defense-YYYYMMDD-modelname/        # Copy of defense materials for easy access
-      ├── defense_strategy.md
-      ├── action_items.md
-      └── case_timeline.md
+  │       ├── defense_strategy.md        # Defense strategy document
+  │       ├── action_items.md            # Action items list
+  │       └── case_timeline.md           # Case timeline
 ```
+
+This structure centralizes all outputs in a single, organized directory tree, with only the source PDFs and the final combined report at the case root level.
 
 ## How to Use
 

@@ -20,14 +20,18 @@ from themis_lib.utils import (
 class CaseAnalyzer:
     """Analyzes legal case documents by extracting text and querying LLMs"""
     
-    def __init__(self, case_dir, model=DEFAULT_MODEL, api_url=None):
+    def __init__(self, case_dir, model=DEFAULT_MODEL, api_url=None, run_dir=None):
         self.case_dir = Path(case_dir).expanduser()
         self.model = model
         self.api_url = api_url
         
-        # Create a model-specific directory in the case directory
-        self.output_dir = self.case_dir / f"{datetime.now().strftime('%Y%m%d')}_{self.model}"
-        self.output_dir.mkdir(parents=True, exist_ok=True)
+        # Use the provided run directory or create a new one
+        if run_dir:
+            self.output_dir = Path(run_dir)
+        else:
+            # Create a date and model-specific directory in the case directory
+            self.output_dir = self.case_dir / f"{datetime.now().strftime('%Y%m%d')}_{self.model}"
+            self.output_dir.mkdir(parents=True, exist_ok=True)
         
         # Cache files are stored in the output directory
         self.analysis_cache = {}

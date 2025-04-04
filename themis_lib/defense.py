@@ -14,29 +14,39 @@ from themis_lib.utils import query_ollama, setup_logging
 class DefenseGenerator:
     """Generates defense materials based on document analysis results"""
     
-    def __init__(self, case_dir, model=DEFAULT_MODEL, analysis_file=None, api_url=None):
+    def __init__(self, case_dir, model=DEFAULT_MODEL, analysis_file=None, api_url=None, run_dir=None):
         self.case_dir = Path(case_dir).expanduser()
         self.model = model
         self.api_url = api_url
 
-        # Create a date and model-specific directory in the case directory
-        self.output_dir = self.case_dir / f"{datetime.now().strftime('%Y%m%d')}_{self.model}"
-        self.output_dir.mkdir(parents=True, exist_ok=True)
+        # Use the provided run directory or create a new one
+        if run_dir:
+            self.output_dir = Path(run_dir)
+        else:
+            # Create a date and model-specific directory in the case directory
+            self.output_dir = self.case_dir / f"{datetime.now().strftime('%Y%m%d')}_{self.model}"
+            self.output_dir.mkdir(parents=True, exist_ok=True)
 
         print_status(f"Initializing defense generator with model: {Fore.CYAN}{model}{Fore.GREEN}", Fore.GREEN)
         print_status(f"Case directory: {Fore.CYAN}{self.case_dir}{Fore.GREEN}", Fore.GREEN)
         print_status(f"Using output directory: {Fore.CYAN}{self.output_dir}{Fore.GREEN}", Fore.GREEN)
 
-        # If a specific analysis file is provided, use it; otherwise construct from model name
+        # If a specific analysis file is provided, use it; otherwise look in the output directory
         if analysis_file:
             self.analysis_file = Path(analysis_file).expanduser()
         else:
-            self.analysis_file = self.case_dir / f"document_analysis_{model}.json"
+            # First check in the output directory
+            output_dir_analysis = self.output_dir / f"document_analysis_{model}.json"
+            if output_dir_analysis.exists():
+                self.analysis_file = output_dir_analysis
+            else:
+                # Fallback to case directory
+                self.analysis_file = self.case_dir / f"document_analysis_{model}.json"
 
         print_status(f"Using analysis file: {Fore.CYAN}{self.analysis_file}{Fore.GREEN}", Fore.GREEN)
 
         # Set up logging
-        self.log_path = self.output_dir / "defense_generation.log"
+        self.log_path = self.output_dir / "case_analysis.log"
         self.logger = setup_logging(self.log_path, f'defense_{self.model}')
 
         # Load analysis data
@@ -131,13 +141,9 @@ class DefenseGenerator:
 
     def generate_all_materials(self):
         """Generate all defense materials and save them to the output directory"""
-        # Create output directory with model name in the logs directory
+        # Create defense materials directory within the output directory
         defense_output_dir = self.output_dir / "defense_materials"
         defense_output_dir.mkdir(exist_ok=True)
-
-        # Create a corresponding directory in the case directory for easy reference
-        case_defense_dir = Path(f"{self.case_dir}/Defense-{datetime.now().strftime('%Y%m%d')}-{self.model}").expanduser()
-        case_defense_dir.mkdir(exist_ok=True)
 
         print_status("Beginning defense material generation...", Fore.MAGENTA)
         start_time = time.time()
@@ -147,22 +153,20 @@ class DefenseGenerator:
         action_items = self.generate_action_items()
         timeline = self.generate_timeline()
 
-        # Save results to both directories
-        print_status(f"Saving results to output directories...", Fore.GREEN)
-
-        # Function to write to both locations
-        def write_to_both(filename, content):
-            # Write to logs directory
-            with open(defense_output_dir / filename, 'w') as f:
-                f.write(content)
-            # Write to case directory
-            with open(case_defense_dir / filename, 'w') as f:
-                f.write(content)
+        print_status(f"Saving results to output directory...", Fore.GREEN)
 
         # Write defense materials
-        write_to_both("defense_strategy.md", "# Defense Strategy\n\n" + defense_strategy)
-        write_to_both("action_items.md", "# Action Items\n\n" + action_items)
-        write_to_both("case_timeline.md", "# Case Timeline\n\n" + timeline)
+        strategy_path = defense_output_dir / "defense_strategy.md"
+        with open(strategy_path, 'w') as f:
+            f.write("# Defense Strategy\n\n" + defense_strategy)
+            
+        action_items_path = defense_output_dir / "action_items.md"
+        with open(action_items_path, 'w') as f:
+            f.write("# Action Items\n\n" + action_items)
+            
+        timeline_path = defense_output_dir / "case_timeline.md"
+        with open(timeline_path, 'w') as f:
+            f.write("# Case Timeline\n\n" + timeline)
 
         # Calculate total time
         total_time = time.time() - start_time
@@ -175,14 +179,13 @@ class DefenseGenerator:
         print_status(f"  - {Fore.CYAN}action_items.md{Fore.GREEN} ({len(action_items)} chars)", Fore.GREEN)
         print_status(f"  - {Fore.CYAN}case_timeline.md{Fore.GREEN} ({len(timeline)} chars)", Fore.GREEN)
         print_status(f"Materials saved to:", Fore.GREEN)
-        print_status(f"  - {Fore.CYAN}{defense_output_dir}{Fore.GREEN} (log directory)", Fore.GREEN)
-        print_status(f"  - {Fore.CYAN}{case_defense_dir}{Fore.GREEN} (case directory)", Fore.GREEN)
+        print_status(f"  - {Fore.CYAN}{defense_output_dir}{Fore.GREEN}", Fore.GREEN)
 
-        self.logger.info(f"Defense materials generated and saved to {defense_output_dir} and {case_defense_dir}")
+        self.logger.info(f"Defense materials generated and saved to {defense_output_dir}")
         
         # Return paths for reference
         return {
-            "defense_strategy": str(case_defense_dir / "defense_strategy.md"),
-            "action_items": str(case_defense_dir / "action_items.md"),
-            "case_timeline": str(case_defense_dir / "case_timeline.md"),
+            "defense_strategy": str(strategy_path),
+            "action_items": str(action_items_path),
+            "case_timeline": str(timeline_path),
         }
