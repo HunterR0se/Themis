@@ -29,6 +29,8 @@ This system processes legal documents in a two-step workflow:
 
 [Full SBF Analysis from Llama 3.3](example/sbf_llama3_3.md)
 
+[Full SBF Analysis from Dolphin 3](example/sbf_dolphin3.md)
+
 ## Requirements
 
 - Python 3.8+
