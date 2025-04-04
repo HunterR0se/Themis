@@ -19,7 +19,7 @@ This system processes legal documents in a two-step workflow:
 
 [Ascii Terminal Example](https://asciinema.org/a/MMJqpIhKKYTtEWw9OxRdZViAm)
 
-## Example Results
+## Example Results (Full Analyze & Defend)
 
 [Full SBF Analysis from Openthinker](example/sbf_full.md)
 
